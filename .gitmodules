@@ -1,0 +1,3 @@
+[submodule "MagicPipes/Assets/Plugins/UnitySceneStateMachine"]
+	path = MagicPipes/Assets/Plugins/UnitySceneStateMachine
+	url = https://github.com/zimik/UnitySceneStateMachine.git
