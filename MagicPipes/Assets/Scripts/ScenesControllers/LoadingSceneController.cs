@@ -11,16 +11,28 @@ public class LoadingSceneController : MonoBehaviour {
     [Inject]
     private readonly SignalBus _signalBus;
 
+    [Inject]
+    private readonly IGameSettingsLoader _gameSettingsLoader;
+
+    [Inject]
+    private readonly IUserDataLoader _userDataLoader;
+    
+
     // Use this for initialization
     void Start () {
-        _applicationDataModule.TestString = "This is test string";
-        StartCoroutine(EndLoading());
+        _gameSettingsLoader.LoadGameSettings(()=> 
+        {
+            _userDataLoader.LoadUserData(() =>
+            {
+                StartCoroutine(EndLoading());
+            });
+            
+        });
     }
 
     private IEnumerator EndLoading()
     {
         yield return new WaitForSeconds(1f);
         _signalBus.Fire(new LoadingCompleteSignal());
-
     }
 }

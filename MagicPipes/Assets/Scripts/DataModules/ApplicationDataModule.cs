@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public interface IApplicationDataModule
+﻿public interface IApplicationDataModule
 {
     bool ApplicationDataHasLoaded
     {
@@ -10,18 +6,9 @@ public interface IApplicationDataModule
         set;
     }
 
-    string TestString
-    {
-        get;
-        set;
-    }
-
-
 }
 
 public class ApplicationDataModule : IApplicationDataModule
 {
-    public string TestString { get; set; }
-
     public bool ApplicationDataHasLoaded { get; set; }
 }

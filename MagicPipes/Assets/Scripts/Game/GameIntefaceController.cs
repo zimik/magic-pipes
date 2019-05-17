@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class GameIntefaceController : MonoBehaviour {
 
+    public TextMeshProUGUI TopPanelRecordLabel;
+
     public TextMeshProUGUI TopPanelPointsLabel;
     public TextMeshProUGUI ResultPanelPointsLabel;
 
@@ -20,4 +22,8 @@ public class GameIntefaceController : MonoBehaviour {
         TopPanelLifesLabel.text = lifes.ToString();
     }
 
+    public void UpdateRecord(int points)
+    {
+        TopPanelRecordLabel.text = points.ToString();
+    }
 }

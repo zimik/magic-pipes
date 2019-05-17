@@ -7,6 +7,8 @@ public class MainInstaller : ScriptableObjectInstaller<MainInstaller>
     public override void InstallBindings()
     {
         Container.Bind<IApplicationDataModule>().To<ApplicationDataModule>().AsSingle();
+        Container.Bind<IGameSettings>().To<GameSettings>().AsSingle();
+        Container.Bind<IUserData>().To<UserData>().AsSingle();
 
         SignalBusInstaller.Install(Container);
 

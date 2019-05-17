@@ -22,7 +22,6 @@ public class GameField : MonoBehaviour {
 
     private List<Pipe> _pipes;
     private Pipe _enterPipe;
-    private Pipe _exitPipe;
 
     // Use this for initialization
     void Awake () {
@@ -102,7 +101,6 @@ public class GameField : MonoBehaviour {
         }
 
         _enterPipe = _pipes[From2to1(EnterPipePosition)];
-        _exitPipe = _pipes[From2to1(ExitPipePosition)];
 
         GeneratePipesFinished.Invoke();
     }
