@@ -3,12 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Pipe : MonoBehaviour {
 
     private const int ROTATE_POSITIONS = 4;
 
-    private enum PipeStates
+    protected enum PipeStates
     {
         Init,
         Waiting,
@@ -20,7 +21,10 @@ public class Pipe : MonoBehaviour {
     public GameObject PipeImage;
 
     public int FlowTimeInSeconds;
-    
+
+    public UnityEvent TransitionTookPlaceEvent;
+    public UnityEvent TransitionDidNotTakePlaceEvent;
+
     //Top, Right, Bottom, Left
     public Connect[] Connects;
 
@@ -31,6 +35,8 @@ public class Pipe : MonoBehaviour {
     private int _timeState;
 
     private bool[] _defaultConnectStates;
+
+    private bool _pause = false;
 
     public void StartProcessing()
     {
@@ -48,7 +54,10 @@ public class Pipe : MonoBehaviour {
         return false;
     }
 
-
+    public void SetPause(bool pause)
+    {
+        _pause = pause;
+    }
 
     // Use this for initialization
     void Awake() {
@@ -79,7 +88,6 @@ public class Pipe : MonoBehaviour {
     }
 
 
-
     private void OnMouseDown()
     {
         Rotate();
@@ -104,8 +112,6 @@ public class Pipe : MonoBehaviour {
                 case PipeStates.Used:
                     OnEnterUsedState();
                     break;
-
-
             }
 
         }
@@ -132,7 +138,15 @@ public class Pipe : MonoBehaviour {
         while (_timeState >= 0)
         {
             TimerLabel.text = _timeState.ToString();
-            yield return new WaitForSecondsRealtime(1f);
+            if (_timeState > 0)
+            {
+                yield return new WaitForSecondsRealtime(1f);
+            }
+
+            if (_pause)
+            {
+                continue;
+            }
             _timeState--;
         }
 
@@ -141,6 +155,8 @@ public class Pipe : MonoBehaviour {
 
     private void OnEnterUsedState()
     {
+        bool transitionTookPlace = false;
+
         for (int i = 0; i<Connects.Length; i++)
         {
             Connect connect = Connects[i];
@@ -149,14 +165,37 @@ public class Pipe : MonoBehaviour {
                 if (connect.ToPipe.IsOpenConnect(connect.OppositeType))
                 {
                     connect.ToPipe.StartProcessing();
+                    transitionTookPlace = true;
                 }
             }
+        }
+
+        if (transitionTookPlace)
+        {
+            TransitionTookPlaceEvent.Invoke();
+        }
+        else
+        {
+            TransitionDidNotTakePlaceEvent.Invoke();
         }
     }
 
     private void Rotate()
     {
-        RotationState++;
+        if (_pause)
+        {
+            return;
+        }
+
+        if(IsEnebledForRotateState(State))
+        {
+            RotationState++;
+        }        
+    }
+
+    protected virtual bool IsEnebledForRotateState(PipeStates state)
+    {
+        return state == PipeStates.Waiting;
     }
 
     private int RotationState

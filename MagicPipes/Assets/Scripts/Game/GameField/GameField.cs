@@ -35,6 +35,23 @@ public class GameField : MonoBehaviour {
 		
 	}
 
+    public void CleanUpField()
+    {
+        for (int i = 0; i<_pipes.Count; i++)
+        {
+            Destroy(_pipes[i].gameObject);
+        }
+        _pipes.Clear();
+    }
+
+    public void SetPause(bool pause)
+    {
+        for (int i = 0; i < _pipes.Count; i++)
+        {
+            _pipes[i].SetPause(pause);
+        }
+    }
+
     public void GenetatePipes()
     {
         Quaternion quaternion = new Quaternion();
