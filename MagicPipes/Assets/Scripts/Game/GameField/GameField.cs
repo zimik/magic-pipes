@@ -51,6 +51,14 @@ public class GameField : MonoBehaviour {
         }
     }
 
+    public void Accelerate(int newSpeed )
+    {
+        for (int i = 0; i < _pipes.Count; i++)
+        {
+            _pipes[i].FlowTimeInSeconds = newSpeed;
+        }
+    }
+
     public void GenetatePipes()
     {
         Quaternion quaternion = new Quaternion();

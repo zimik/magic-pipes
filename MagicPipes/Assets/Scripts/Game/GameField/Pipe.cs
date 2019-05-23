@@ -9,6 +9,12 @@ public class Pipe : MonoBehaviour {
 
     private const int ROTATE_POSITIONS = 4;
 
+    private const string EMPTY_PIPE_ANIMATION = "EmptyPipeAnimation";
+    private const string EXIT_PIPE_ANIMATION = "FullPipeAnimation";
+    private const string PROCESSING_PIPE_ANIMATION = "PipeAnimation";
+
+    private const string PROCESSING_REVERSE_PIPE_ANIMATION = "ReversePipeAnimation";
+
     protected enum PipeStates
     {
         Init,
@@ -25,6 +31,8 @@ public class Pipe : MonoBehaviour {
     public UnityEvent TransitionTookPlaceEvent;
     public UnityEvent TransitionDidNotTakePlaceEvent;
 
+    public Animator Animator;
+
     //Top, Right, Bottom, Left
     public Connect[] Connects;
 
@@ -35,11 +43,29 @@ public class Pipe : MonoBehaviour {
     private int _timeState;
 
     private bool[] _defaultConnectStates;
+    private Connect.ConnectFlowDirection[] _defaultDirectionStates;
 
     private bool _pause = false;
 
+    private string _processingAnimation = PROCESSING_PIPE_ANIMATION;
+
     public void StartProcessing()
     {
+        State = PipeStates.Processing;
+    }
+
+    public void StartProcessing(Connect.ConnectType type)
+    {
+        Connect connect = Connects[Convert.ToInt32(type)];
+        if(connect.DefaultFlowDirection == Connect.ConnectFlowDirection.In)
+        {
+            _processingAnimation = PROCESSING_PIPE_ANIMATION;
+//            _processingAnimation = PROCESSING_REVERSE_PIPE_ANIMATION;
+        }
+        else
+        {
+            _processingAnimation = PROCESSING_REVERSE_PIPE_ANIMATION;
+        }
         State = PipeStates.Processing;
     }
 
@@ -57,6 +83,7 @@ public class Pipe : MonoBehaviour {
     public void SetPause(bool pause)
     {
         _pause = pause;
+        Animator.enabled = !_pause;
     }
 
     // Use this for initialization
@@ -64,17 +91,21 @@ public class Pipe : MonoBehaviour {
         State = PipeStates.Waiting;
 
         _defaultConnectStates = new bool[Connects.Length];
-        for(int i = 0; i< _defaultConnectStates.Length; i++)
+        _defaultDirectionStates = new Connect.ConnectFlowDirection[Connects.Length];
+        for (int i = 0; i< Connects.Length; i++)
         {
             _defaultConnectStates[i] = Connects[i].IsActive;
+            _defaultDirectionStates[i] = Connects[i].DefaultFlowDirection;
         }
     }
 
     private void UpdateConnects()
     {
-        for (int i = 0; i < _defaultConnectStates.Length; i++)
+        for (int i = 0; i < Connects.Length; i++)
         {
-            Connects[i].IsActive = _defaultConnectStates[(i + RotationState) % ROTATE_POSITIONS];
+            int defaultIndex = (i + RotationState) % ROTATE_POSITIONS;
+            Connects[i].IsActive = _defaultConnectStates[defaultIndex];
+            Connects[i].DefaultFlowDirection = _defaultDirectionStates[defaultIndex];
         }
 
     }
@@ -122,14 +153,23 @@ public class Pipe : MonoBehaviour {
     private void OnEnterWaitingState()
     {
         TimerLabel.gameObject.SetActive(false);
+        if (Animator != null)
+        {
+            Animator.Play(EMPTY_PIPE_ANIMATION);
+        }
 
     }
 
     private void OnEnterProcessingState()
     {
-        TimerLabel.gameObject.SetActive(true);
+//        TimerLabel.gameObject.SetActive(true);
         _timeState = FlowTimeInSeconds;
         StartCoroutine(ProcessingActivitieCoroutine());
+        if(Animator != null)
+        {
+            Animator.Play(_processingAnimation);
+            Animator.speed = 1f/FlowTimeInSeconds;
+        }
 
     }
 
@@ -137,7 +177,7 @@ public class Pipe : MonoBehaviour {
     {
         while (_timeState >= 0)
         {
-            TimerLabel.text = _timeState.ToString();
+//            TimerLabel.text = _timeState.ToString();
             if (_timeState > 0)
             {
                 yield return new WaitForSecondsRealtime(1f);
@@ -164,7 +204,7 @@ public class Pipe : MonoBehaviour {
             {
                 if (connect.ToPipe.IsOpenConnect(connect.OppositeType))
                 {
-                    connect.ToPipe.StartProcessing();
+                    connect.ToPipe.StartProcessing(connect.OppositeType);
                     transitionTookPlace = true;
                 }
             }
@@ -177,6 +217,11 @@ public class Pipe : MonoBehaviour {
         else
         {
             TransitionDidNotTakePlaceEvent.Invoke();
+        }
+
+        if (Animator != null)
+        {
+            //Animator.Play(EXIT_PIPE_ANIMATION);
         }
     }
 

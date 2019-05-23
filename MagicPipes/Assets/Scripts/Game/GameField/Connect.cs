@@ -13,8 +13,16 @@ public class Connect  {
         Left
     }
 
+    public enum ConnectFlowDirection
+    {
+        Empty,
+        In,
+        Out
+    }
+
     public Pipe ToPipe;
     public bool IsActive;
     public ConnectType Type;
     public ConnectType OppositeType;
+    public ConnectFlowDirection DefaultFlowDirection;
 }
